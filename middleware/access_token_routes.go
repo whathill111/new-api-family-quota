@@ -57,6 +57,10 @@ var accessTokenRouteRules = map[string]accessTokenRouteRule{
 	"GET /api/oauth/:provider":            accessTokenSessionRule,
 	"GET /api/verify/methods":             accessTokenAnyRule,
 	"POST /api/verify":                    accessTokenAnyRule,
+	"GET /api/family-quota":               accessTokenSessionRule,
+	"POST /api/family-quota/redeem":       accessTokenSessionRule,
+	"POST /api/family-quota/admin/grant":  accessTokenSessionRule,
+	"POST /api/family-quota/admin/codes":  accessTokenSessionRule,
 
 	// router/api-router.go: /api/user (self)
 	"GET /api/user/sessions":                       accessTokenSessionRule,

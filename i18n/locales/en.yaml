@@ -97,3 +97,9 @@ channel.upstream_update_failed_channels: "Failed channel IDs (showing {{.Shown}}
 channel.upstream_update_more_omitted: " ({{.Count}} more omitted)"
 
 channel.notify_scheduled_subject: "Channel \"{{.Name}}\" (#{{.Id}}) plugin notification"
+
+family_quota.member_required: "Family group membership required."
+family_quota.invalid_code: "Family code is invalid, expired, or already used."
+family_quota.amount_limit: "Family balance or amount exceeds the supported range."
+family_quota.accounting_failed: "Family quota accounting failed."
+family_quota.redeemed: "Redeemed {{.Quota}} family quota units."

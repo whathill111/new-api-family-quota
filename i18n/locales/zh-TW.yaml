@@ -98,3 +98,9 @@ channel.upstream_update_failed_channels: "失敗管道 ID（顯示 {{.Shown}}/{{
 channel.upstream_update_more_omitted: "（其餘 {{.Count}} 個已省略）"
 
 channel.notify_scheduled_subject: "渠道「{{.Name}}」(#{{.Id}}) 外掛通知"
+
+family_quota.member_required: "僅家族成員可執行此操作。"
+family_quota.invalid_code: "家族序號無效、已過期或已使用。"
+family_quota.amount_limit: "家族額度餘額或金額超出支援範圍。"
+family_quota.accounting_failed: "家族額度處理失敗。"
+family_quota.redeemed: "已兌換 {{.Quota}} 個家族額度單位。"

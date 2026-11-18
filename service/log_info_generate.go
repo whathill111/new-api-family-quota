@@ -201,7 +201,7 @@ func appendBillingInfo(relayInfo *relaycommon.RelayInfo, other *model.LogOther) 
 	if relayInfo == nil || other == nil {
 		return
 	}
-	// billing_source: "wallet" or "subscription"
+	// billing_source identifies the wallet, subscription, or family balance.
 	if relayInfo.BillingSource != "" {
 		other.SetPublic("billing_source", relayInfo.BillingSource)
 	}

@@ -46,7 +46,7 @@ func PrepareRequestBilling(c *gin.Context, info *relaycommon.RelayInfo) *types.N
 	if err != nil {
 		return types.NewError(err, types.ErrorCodeModelPriceError, types.ErrOptionWithStatusCode(http.StatusBadRequest))
 	}
-	if priceData.FreeModel {
+	if priceData.FreeModel && !common.IsFamilyQuotaGroup(info.UsingGroup) {
 		logger.LogInfo(c, common.LogText("model %s is free, skipping pre-consume", info.OriginModelName))
 		return nil
 	}

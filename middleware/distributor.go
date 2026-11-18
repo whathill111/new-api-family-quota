@@ -99,6 +99,10 @@ func Distribute() func(c *gin.Context) {
 		}
 		if pinned || shouldSelectChannel {
 			usingGroup := common.GetContextKeyString(c, constant.ContextKeyUsingGroup)
+			if familyErr := service.CheckFamilyRelay(c, usingGroup); familyErr != nil {
+				abortWithOpenAiMessage(c, familyErr.StatusCode, familyErr.Message, familyErr.Code)
+				return
+			}
 			var selectErr *service.ChannelSelectError
 			if value, exists := c.Get(contextKeyTaskPluginEndpointSelection); exists && !pinned {
 				if selected, ok := value.(taskPluginEndpointSelection); ok && selected.Model == modelRequest.Model && selected.Channel != nil && selected.Channel.Status == common.ChannelStatusEnabled {

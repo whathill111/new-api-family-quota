@@ -98,3 +98,9 @@ channel.upstream_update_failed_channels: "失败渠道 ID（展示 {{.Shown}}/{{
 channel.upstream_update_more_omitted: "（其余 {{.Count}} 个已省略）"
 
 channel.notify_scheduled_subject: "渠道“{{.Name}}” (#{{.Id}}) 插件通知"
+
+family_quota.member_required: "仅家族成员可执行此操作。"
+family_quota.invalid_code: "家族卡密无效、已过期或已使用。"
+family_quota.amount_limit: "家族额度余额或金额超出支持范围。"
+family_quota.accounting_failed: "家族额度处理失败。"
+family_quota.redeemed: "已兑换 {{.Quota}} 个家族额度单位。"

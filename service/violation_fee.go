@@ -104,6 +104,9 @@ func ChargeViolationFeeIfNeeded(ctx *gin.Context, relayInfo *relaycommon.RelayIn
 	if ctx == nil || relayInfo == nil || apiErr == nil {
 		return false
 	}
+	if common.IsFamilyQuotaGroup(relayInfo.UsingGroup) {
+		return false
+	}
 	//if relayInfo.IsPlayground {
 	//	return false
 	//}

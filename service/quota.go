@@ -438,7 +438,9 @@ func PostConsumeQuota(relayInfo *relaycommon.RelayInfo, quota int, preConsumedQu
 }
 
 func postConsumeQuotaWithResult(relayInfo *relaycommon.RelayInfo, quota int, preConsumedQuota int, sendEmail bool) (result postConsumeQuotaResult, err error) {
-
+	if relayInfo != nil && (relayInfo.BillingSource == BillingSourceFamily || common.IsFamilyQuotaGroup(relayInfo.UsingGroup)) {
+		return result, errors.New("family billing requires a reservation")
+	}
 	// 1) Consume from wallet quota OR subscription item
 	if relayInfo != nil && relayInfo.BillingSource == BillingSourceSubscription {
 		if relayInfo.SubscriptionId == 0 {

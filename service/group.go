@@ -38,6 +38,9 @@ func GetUserUsableGroups(userGroup string) map[string]string {
 			groupsCopy[userGroup] = "User group"
 		}
 	}
+	if family := common.FamilyQuotaGroup(); family != "" && userGroup != family {
+		delete(groupsCopy, family)
+	}
 	return groupsCopy
 }
 
@@ -58,7 +61,7 @@ func GetUserAutoGroup(userGroup string) []string {
 	autoGroups := make([]string, 0)
 	seen := make(map[string]struct{})
 	for _, group := range setting.GetAutoGroups() {
-		if !IsUserSelectableGroup(userGroup, group) {
+		if common.IsFamilyQuotaGroup(group) || !IsUserSelectableGroup(userGroup, group) {
 			continue
 		}
 		if _, ok := seen[group]; ok {
@@ -77,7 +80,7 @@ func FilterUserTokenAutoGroups(userGroup string, groups []string) []string {
 	filtered := make([]string, 0, min(len(groups), maxCount))
 	seen := make(map[string]struct{})
 	for _, group := range groups {
-		if !IsUserSelectableGroup(userGroup, group) {
+		if common.IsFamilyQuotaGroup(group) || !IsUserSelectableGroup(userGroup, group) {
 			continue
 		}
 		if _, ok := seen[group]; ok {

@@ -306,6 +306,9 @@ type ChannelSelectError struct {
 // filters. The group the channel was chosen from is returned for auto-group
 // callers. The caller still applies SetupContextForSelectedChannel.
 func SelectChannelForRequest(c *gin.Context, modelName string, retry *RetryParam) (*model.Channel, string, *ChannelSelectError) {
+	if err := CheckFamilyRelay(c, retry.TokenGroup); err != nil {
+		return nil, "", err
+	}
 	constraints := GetChannelConstraints(c)
 	if pin, found, overridden := constraints.ResolvedPin(); found {
 		for _, lost := range overridden {

@@ -6,6 +6,8 @@
 
 **连接模型、应用与 Agent 的 AI 网关**
 
+[家族额度改版部署与操作手册](./docs/family-quota-deployment.zh-CN.md)
+
 <p align="center">
   <strong>简体中文</strong> |
   <a href="./README.zh_TW.md">繁體中文</a> |

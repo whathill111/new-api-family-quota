@@ -51,7 +51,7 @@ func (s *BillingSession) Settle(actualQuota int) error {
 		return nil
 	}
 	delta := actualQuota - s.preConsumedQuota
-	if delta == 0 {
+	if delta == 0 && s.funding.Source() != BillingSourceFamily {
 		s.settled = true
 		return nil
 	}
@@ -64,7 +64,7 @@ func (s *BillingSession) Settle(actualQuota int) error {
 	}
 	// 2) 调整令牌额度
 	var tokenErr error
-	if !s.relayInfo.IsPlayground {
+	if delta != 0 && !s.relayInfo.IsPlayground {
 		if delta > 0 {
 			tokenErr = model.DecreaseTokenQuota(s.relayInfo.TokenId, s.relayInfo.TokenKey, delta)
 		} else {
@@ -145,6 +145,9 @@ func (s *BillingSession) needsRefundLocked() bool {
 	}
 	// 订阅可能在 tokenConsumed=0 时仍预扣了额度
 	if sub, ok := s.funding.(*SubscriptionFunding); ok && sub.preConsumed > 0 {
+		return true
+	}
+	if family, ok := s.funding.(*FamilyFunding); ok && family.holdID > 0 {
 		return true
 	}
 	return false
@@ -247,6 +250,9 @@ func (s *BillingSession) preConsume(c *gin.Context, quota int) *types.NewAPIErro
 				types.ErrOptionWithSkipRetry(), types.ErrOptionWithNoRecordErrorLog())
 		}
 		errMsg := err.Error()
+		if s.funding.Source() == BillingSourceFamily {
+			return familyBillingError(err)
+		}
 		if strings.Contains(errMsg, "no active subscription") || strings.Contains(errMsg, "subscription quota insufficient") {
 			return types.NewErrorWithStatusCode(errors.New(i18n.T(c, i18n.MsgQuotaSubscriptionInsufficient, map[string]any{"Error": errMsg})), types.ErrorCodeInsufficientUserQuota, http.StatusForbidden, types.ErrOptionWithSkipRetry(), types.ErrOptionWithNoRecordErrorLog())
 		}
@@ -263,6 +269,11 @@ func (s *BillingSession) preConsume(c *gin.Context, quota int) *types.NewAPIErro
 
 func (s *BillingSession) reserveFunding(delta int, requireAvailableQuota bool) error {
 	switch funding := s.funding.(type) {
+	case *FamilyFunding:
+		if err := funding.PreConsume(delta); err != nil {
+			return familyBillingError(err)
+		}
+		return nil
 	case *WalletFunding:
 		if requireAvailableQuota {
 			// Image quantities and task retry prices are known before
@@ -302,6 +313,12 @@ func (s *BillingSession) reserveFunding(delta int, requireAvailableQuota bool) e
 
 func (s *BillingSession) rollbackFundingReserve(delta int) {
 	switch funding := s.funding.(type) {
+	case *FamilyFunding:
+		if err := model.AdjustFamilyHold(funding.holdID, -delta); err != nil {
+			common.SysError(common.LogText("failed to undo family quota hold %d: %s", funding.holdID, err.Error()))
+		} else {
+			funding.reserved -= delta
+		}
 	case *WalletFunding:
 		if err := model.IncreaseUserQuota(funding.userId, delta, false); err != nil {
 			common.SysLog(common.LogText("error rolling back wallet funding reserve: %s", err.Error()))
@@ -391,6 +408,20 @@ func NewBillingSession(c *gin.Context, relayInfo *relaycommon.RelayInfo, preCons
 		return nil, types.NewError(fmt.Errorf("relayInfo is nil"), types.ErrorCodeInvalidRequest, types.ErrOptionWithSkipRetry())
 	}
 
+	if common.IsFamilyQuotaGroup(relayInfo.UsingGroup) {
+		if relayInfo.ForcePreConsume {
+			return nil, types.NewErrorWithStatusCode(errors.New("Family quota supports synchronous text requests only."), types.ErrorCodeInvalidRequest, http.StatusBadRequest, types.ErrOptionWithSkipRetry())
+		}
+		session := &BillingSession{
+			relayInfo: relayInfo,
+			funding:   &FamilyFunding{userID: relayInfo.UserId, group: relayInfo.UsingGroup},
+			lang:      i18n.StatedLang(c),
+		}
+		if apiErr := session.preConsume(c, max(1, preConsumedQuota)); apiErr != nil {
+			return nil, apiErr
+		}
+		return session, nil
+	}
 	pref := common.NormalizeBillingPreference(relayInfo.UserSetting.BillingPreference)
 
 	// 钱包路径需要先检查用户额度

@@ -6,6 +6,8 @@
 
 **An AI gateway for models, applications, and agents**
 
+[Family quota deployment guide (简体中文)](./docs/family-quota-deployment.zh-CN.md)
+
 <p align="center">
   <a href="./README.zh_CN.md">简体中文</a> |
   <a href="./README.zh_TW.md">繁體中文</a> |
